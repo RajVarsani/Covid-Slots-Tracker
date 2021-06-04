@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Covid Vaccine Slots Tracker</string>
+    <string name="start">Start</string>
+    <string name="pincode">Pincode</string>
+    <string name="stop">stop</string>
+    <string name="retry_interval">Retry Interval in seconds</string>
+    <string name="explore_nearby_covid_centers">explore nearby covid centers</string>
+</resources>
