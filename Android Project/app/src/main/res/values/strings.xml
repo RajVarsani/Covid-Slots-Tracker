@@ -5,4 +5,12 @@
     <string name="stop">stop</string>
     <string name="retry_interval">Retry Interval in seconds</string>
     <string name="explore_nearby_covid_centers">explore nearby covid centers</string>
+
+
+    <string-array name="age_filter_choices">
+        <item>Both</item>
+        <item>18+</item>
+        <item>45+</item>
+    </string-array>
+
 </resources>

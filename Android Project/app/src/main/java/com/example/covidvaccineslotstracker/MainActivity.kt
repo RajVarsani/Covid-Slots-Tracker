@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.android.volley.DefaultRetryPolicy
@@ -23,6 +24,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var reqQueue: RequestQueue
     private val baseUrl = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByPin?"
+
 
     @SuppressLint("ApplySharedPref")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,6 +49,22 @@ class MainActivity : AppCompatActivity() {
             }  "
         )
 
+        ArrayAdapter.createFromResource(
+            this,
+            R.array.age_filter_choices,
+            android.R.layout.simple_spinner_item
+        ).also { adapter ->
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            ageFilterChoiceSpinner.adapter = adapter
+        }
+
+        ageFilterChoiceSpinner.setSelection(
+            pref.getInt(
+                "AgeF",
+                0
+            )
+        )
+
         pinText.setText(
             pref.getInt(
                 "Pin",
@@ -67,6 +85,7 @@ class MainActivity : AppCompatActivity() {
                 val editor: SharedPreferences.Editor = pref.edit()
                 editor.putInt("Pin", pinText.text.toString().toInt())
                 editor.putInt("Time", retryTimeText.text.toString().toFloat().toInt())
+                editor.putInt("AgeF", ageFilterChoiceSpinner.selectedItemPosition)
                 editor.commit()
 
 

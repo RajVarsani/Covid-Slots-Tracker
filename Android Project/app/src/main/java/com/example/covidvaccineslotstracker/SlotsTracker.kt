@@ -31,6 +31,7 @@ class SlotsTracker : Service() {
 
     private var pincode: Int = 0
     private var retryInterval: Long = 5000
+    private var ageFilterChoice: Int = 0
     private lateinit var mHandler: Handler
     private val runnableForImageSwap = object : Runnable {
         override fun run() {
@@ -123,6 +124,10 @@ class SlotsTracker : Service() {
             "Time",
             5
         ) * 1000).toLong()
+        ageFilterChoice = pref.getInt(
+            "AgeF",
+            0
+        )
 
         reqQueue = Volley.newRequestQueue(this)
 
@@ -193,90 +198,30 @@ class SlotsTracker : Service() {
                     }
                 }
 
-
-
                 Log.e("Data Received", "Parsed data is : $centerObjList ")
 
 
 //                checking
 //                for (i in 0 until centerObjList.size) {
-//                    centerObjList[i].available_capacity = (0..1).random()
+//                    centerObjList[i].available_capacity = (10..15).random()
 //                }
 //                Log.e("Data Received", "modified data is : $centerObjList ")
 
 
                 for (i in 0 until centerObjList.size) {
                     if (centerObjList[i].available_capacity > 0) {
-                        val intentToExpandedSlotDetails =
-                            Intent(this, ExpandedSlotDetails::class.java)
-                        intentToExpandedSlotDetails.putExtra("Data", centerObjList)
-                        pendingIntent =
-                            PendingIntent.getActivity(
-                                this,
-                                0,
-                                intentToExpandedSlotDetails,
-                                PendingIntent.FLAG_UPDATE_CURRENT
-                            )
 
-                        Log.e("Notification", "Reached")
-
-                        notificationManager =
-                            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            notificationChannel = NotificationChannel(
-                                "notify slot available",
-                                "notification to notify user slot is availble",
-                                NotificationManager.IMPORTANCE_HIGH
-                            )
-                            notificationChannel.enableLights(true)
-//                            notificationChannel.lightColor = Color.BLACK
-                            notificationChannel.enableVibration(false)
-                            notificationManager.createNotificationChannel(notificationChannel)
-
-                            val builder = Notification.Builder(this, "notify slot available")
-                                .setContentTitle(centerObjList[i].available_capacity.toString() + " Slot(s) Available")
-                                .setContentText("Center : ${centerObjList[i].name} ")
-                                .setSmallIcon(R.drawable.ic_logo)
-                                .setPriority(Notification.PRIORITY_DEFAULT)
-                                .setStyle(
-                                    Notification.BigTextStyle().bigText(
-                                        "Center : ${centerObjList[i].name}\n" +
-                                                "Address : ${centerObjList[i].address}\n" +
-                                                "Available capacity for dose 1 :${centerObjList[i].available_capacity_dose1}\n" +
-                                                "Available capacity for dose 2 :${centerObjList[i].available_capacity_dose2}"
-                                    )
-                                )
-                                .setContentIntent(pendingIntent)
-                                .setAutoCancel(true)
-
-
-                            notificationManager.notify(dayChkIndex * 1000 + i, builder.build())
-
-
-                        } else {
-
-                            val builder = Notification.Builder(this)
-                                .setContentTitle(centerObjList[i].available_capacity.toString() + " Slot(s) Available")
-                                .setContentText("Center : ${centerObjList[i].name} ")
-                                .setSmallIcon(R.drawable.ic_logo)
-                                .setPriority(Notification.PRIORITY_DEFAULT)
-                                .setStyle(
-                                    Notification.BigTextStyle().bigText(
-                                        "Center : ${centerObjList[i].name}\n" +
-                                                "Address : ${centerObjList[i].address}\n" +
-                                                "Available capacity for dose 1 :${centerObjList[i].available_capacity_dose1}\n" +
-                                                "Available capacity for dose 2 :${centerObjList[i].available_capacity_dose2}"
-                                    )
-                                )
-                                .setContentIntent(pendingIntent)
-                                .setAutoCancel(true)
-
-                            notificationManager.notify(dayChkIndex * 1000 + i, builder.build())
-
+                        if (ageFilterChoice == 0) {
+                            showSlotAvailableNotification(centerObjList, dayChkIndex, i)
+                        } else if (ageFilterChoice == 1) {
+                            if (centerObjList[i].min_age_limit == 18) {
+                                showSlotAvailableNotification(centerObjList, dayChkIndex, i)
+                            }
+                        } else if (ageFilterChoice == 2) {
+                            if (centerObjList[i].min_age_limit == 45) {
+                                showSlotAvailableNotification(centerObjList, dayChkIndex, i)
+                            }
                         }
-
 
 //                        val builder = NotificationCompat.Builder(this, "notify slot available")
 //                            .setContentTitle(centerObjList[i].available_capacity.toString() + " Slot(s) Available")
@@ -321,6 +266,82 @@ class SlotsTracker : Service() {
         reqQueue.add(jsonObjectRequest)
 
 
+    }
+
+    private fun showSlotAvailableNotification(
+        centerObjList: ArrayList<Session>,
+        dayChkIndex: Int,
+        i: Int
+    ) {
+        val intentToExpandedSlotDetails =
+            Intent(this, ExpandedSlotDetails::class.java)
+        intentToExpandedSlotDetails.putExtra("Data", centerObjList)
+        pendingIntent =
+            PendingIntent.getActivity(
+                this,
+                0,
+                intentToExpandedSlotDetails,
+                PendingIntent.FLAG_UPDATE_CURRENT
+            )
+
+        Log.e("Notification", "Reached")
+
+        notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            notificationChannel = NotificationChannel(
+                "notify slot available",
+                "notification to notify user slot is availble",
+                NotificationManager.IMPORTANCE_HIGH
+            )
+            notificationChannel.enableLights(true)
+//                            notificationChannel.lightColor = Color.BLACK
+            notificationChannel.enableVibration(false)
+            notificationManager.createNotificationChannel(notificationChannel)
+
+            val builder = Notification.Builder(this, "notify slot available")
+                .setContentTitle(centerObjList[i].available_capacity.toString() + " Slot(s) Available for " + centerObjList[i].min_age_limit + "+ Age Group")
+                .setContentText("Center : ${centerObjList[i].name} ")
+                .setSmallIcon(R.drawable.ic_logo)
+                .setPriority(Notification.PRIORITY_DEFAULT)
+                .setStyle(
+                    Notification.BigTextStyle().bigText(
+                        "Center : ${centerObjList[i].name}\n" +
+                                "Address : ${centerObjList[i].address}\n" +
+                                "Available capacity for dose 1 :${centerObjList[i].available_capacity_dose1}\n" +
+                                "Available capacity for dose 2 :${centerObjList[i].available_capacity_dose2}"
+                    )
+                )
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true)
+
+
+            notificationManager.notify(dayChkIndex * 1000 + i, builder.build())
+
+
+        } else {
+
+            val builder = Notification.Builder(this)
+                .setContentTitle(centerObjList[i].available_capacity.toString() + " Slot(s) Available for " + centerObjList[i].min_age_limit + "+ Age Group")
+                .setContentText("Center : ${centerObjList[i].name} ")
+                .setSmallIcon(R.drawable.ic_logo)
+                .setPriority(Notification.PRIORITY_DEFAULT)
+                .setStyle(
+                    Notification.BigTextStyle().bigText(
+                        "Center : ${centerObjList[i].name}\n" +
+                                "Address : ${centerObjList[i].address}\n" +
+                                "Available capacity for dose 1 :${centerObjList[i].available_capacity_dose1}\n" +
+                                "Available capacity for dose 2 :${centerObjList[i].available_capacity_dose2}"
+                    )
+                )
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true)
+
+            notificationManager.notify(dayChkIndex * 1000 + i, builder.build())
+
+        }
     }
 
 
