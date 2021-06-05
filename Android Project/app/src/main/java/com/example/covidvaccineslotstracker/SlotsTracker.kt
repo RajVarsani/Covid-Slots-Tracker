@@ -80,7 +80,6 @@ class SlotsTracker : Service() {
                 NotificationManager.IMPORTANCE_HIGH
             )
             notificationChannel.enableLights(true)
-//                            notificationChannel.lightColor = Color.BLACK
             notificationChannel.enableVibration(false)
             notificationManager.createNotificationChannel(notificationChannel)
 
@@ -101,17 +100,15 @@ class SlotsTracker : Service() {
 
 
             val builder = Notification.Builder(this)
-                .setContentTitle(" Slot(s) Available")
-                .setContentText("Center :  ")
+                .setContentTitle("App is Running")
+                .setContentText("Click for more info")
                 .setSmallIcon(R.drawable.ic_logo)
                 .setPriority(Notification.PRIORITY_DEFAULT)
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(false)
                 .setOngoing(true)
 
-
-
-            notificationManager.notify(123456, builder.build())
+            startForeground(123456, builder.build())
 
         }
 
